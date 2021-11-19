@@ -1,0 +1,7 @@
+-- Administrator role
+CREATE ROLE admin WITH NOSUPERUSER CREATEDB CREATEROLE NOLOGIN;
+
+-- Database for shared API authentication methods
+CREATE DATABASE auth WITH OWNER admin;
+REVOKE ALL ON DATABASE auth FROM PUBLIC;
+GRANT CONNECT ON DATABASE auth TO PUBLIC;
