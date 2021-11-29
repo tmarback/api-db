@@ -17,17 +17,17 @@ CREATE TABLE IF NOT EXISTS api_key_auth.keys (
 CREATE TABLE IF NOT EXISTS api_key_auth.access (
     keyval      CHARACTER( 20 ) NOT NULL REFERENCES api_key_auth.keys ON DELETE CASCADE ON UPDATE CASCADE,
     api         TEXT            NOT NULL, -- Which API to grant access to, or '*' for all
-    ver         TEXT            NOT NULL, -- Which version of the API to grant access to, or '*' for all
+    role        TEXT            NOT NULL, -- Which role with the API to grant access to, or '*' for all
     PRIMARY KEY ( keyval, api, ver )
 );
 
--- Determines if a key is valid and has access to the given API and version.
+-- Determines if a key is valid and has access to the given API and role.
 -- Possible return codes are:
 --   0 - Key is valid and has access
 --   1 - Key is valid but does not have access
 --   2 - Key is invalid
 -- This is the only object in this schema that non-admins should be able to access.
-CREATE OR REPLACE FUNCTION api_key_auth.has_access( p_keyval TEXT, p_api TEXT, p_ver TEXT ) 
+CREATE OR REPLACE FUNCTION api_key_auth.has_access( p_keyval TEXT, p_api TEXT, p_role TEXT ) 
 RETURNS INTEGER AS $$
 DECLARE 
     valid INTEGER;
@@ -44,8 +44,8 @@ BEGIN
     SELECT  COUNT(*) INTO found
     FROM    access u
     WHERE   u.keyval = p_keyval 
-            AND ( u.api = p_api OR u.api = '*' ) 
-            AND ( u.ver = p_ver OR u.ver = '*' );
+            AND ( u.api  = p_api  OR u.api  = '*' ) 
+            AND ( u.role = p_role OR u.role = '*' );
 
     IF found > 0 THEN
         RETURN 0;
